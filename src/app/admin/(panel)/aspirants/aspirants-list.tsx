@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { Aspirant } from "@/lib/types";
+import type { Aspirant, Sex } from "@/lib/types";
 
 type DeleteAction = (id: string) => Promise<void>;
 type EditAction = (id: string, formData: FormData) => Promise<{ ok: boolean; error?: string }>;
@@ -54,7 +54,8 @@ export default function AspirantsList({
       // Refetch is async via server; do a light optimistic patch too so it feels instant.
       const name = String(formData.get("name") || "");
       const position = String(formData.get("position") || "");
-      const sex = String(formData.get("sex") || "");
+      const sexRaw = String(formData.get("sex") || "");
+      const sex: Sex | null = sexRaw === "Male" || sexRaw === "Female" ? sexRaw : null;
       setAspirants((prev) =>
         prev.map((a) => (a.id === id ? { ...a, name, position, sex } : a))
       );
