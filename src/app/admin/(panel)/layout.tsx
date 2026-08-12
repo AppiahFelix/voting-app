@@ -97,7 +97,7 @@ export default function AdminPanelLayout({ children }: { children: React.ReactNo
           </nav>
         )}
       </header>
-      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 flex-1 min-w-0">{children}</div>
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-10 flex-1 min-w-0 overflow-x-hidden">{children}</div>
     </div>
   );
 }
