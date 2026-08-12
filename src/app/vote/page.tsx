@@ -7,6 +7,20 @@ import type { Aspirant } from "@/lib/types";
 
 type Step = "entry" | "ballot" | "done";
 
+function splitBySex(aspirants: Aspirant[]) {
+  const groups: Record<string, Aspirant[]> = {};
+  for (const a of aspirants) {
+    const key = a.sex === "Male" || a.sex === "Female" ? a.sex : "Other";
+    groups[key] = groups[key] || [];
+    groups[key].push(a);
+  }
+  const isSplit =
+    (groups["Male"]?.length ?? 0) > 0 &&
+    (groups["Female"]?.length ?? 0) > 0 &&
+    !groups["Other"];
+  return { groups, isSplit };
+}
+
 export default function VotePage() {
   const [step, setStep] = useState<Step>("entry");
   const [code, setCode] = useState("");
@@ -31,11 +45,24 @@ export default function VotePage() {
 
   function handleSubmit() {
     setError(null);
-    const missing = positions.find((p) => !selections[p.position]);
-    if (missing) {
-      setError(`Select a candidate for ${missing.position} before submitting.`);
-      return;
+
+    for (const p of positions) {
+      const { isSplit } = splitBySex(p.aspirants);
+      if (isSplit) {
+        if (!selections[`${p.position}::Male`]) {
+          setError(`Select a Male candidate for ${p.position} before submitting.`);
+          return;
+        }
+        if (!selections[`${p.position}::Female`]) {
+          setError(`Select a Female candidate for ${p.position} before submitting.`);
+          return;
+        }
+      } else if (!selections[p.position]) {
+        setError(`Select a candidate for ${p.position} before submitting.`);
+        return;
+      }
     }
+
     startTransition(async () => {
       const res = await submitVotes(code, selections);
       if (!res.ok) {
@@ -76,19 +103,10 @@ export default function VotePage() {
 
           <div className="space-y-8">
             {positions.map((p) => {
-              const groups: Record<string, Aspirant[]> = {};
-              for (const a of p.aspirants) {
-                const key = a.sex === "Male" || a.sex === "Female" ? a.sex : "Other";
-                groups[key] = groups[key] || [];
-                groups[key].push(a);
-              }
-              const isSplit =
-                (groups["Male"]?.length ?? 0) > 0 &&
-                (groups["Female"]?.length ?? 0) > 0 &&
-                !groups["Other"];
+              const { groups, isSplit } = splitBySex(p.aspirants);
 
-              const renderAspirant = (a: Aspirant) => {
-                const checked = selections[p.position] === a.id;
+              const renderAspirant = (a: Aspirant, selectionKey: string) => {
+                const checked = selections[selectionKey] === a.id;
                 return (
                   <label
                     key={a.id}
@@ -98,11 +116,11 @@ export default function VotePage() {
                   >
                     <input
                       type="radio"
-                      name={p.position}
+                      name={selectionKey}
                       value={a.id}
                       checked={checked}
                       onChange={() =>
-                        setSelections((prev) => ({ ...prev, [p.position]: a.id }))
+                        setSelections((prev) => ({ ...prev, [selectionKey]: a.id }))
                       }
                       className="accent-[var(--seal)] w-4 h-4"
                     />
@@ -133,15 +151,21 @@ export default function VotePage() {
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <p className="text-xs uppercase tracking-wide text-muted mb-2">Male</p>
-                        <div className="space-y-2">{groups["Male"].map(renderAspirant)}</div>
+                        <div className="space-y-2">
+                          {groups["Male"].map((a) => renderAspirant(a, `${p.position}::Male`))}
+                        </div>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-muted mb-2">Female</p>
-                        <div className="space-y-2">{groups["Female"].map(renderAspirant)}</div>
+                        <div className="space-y-2">
+                          {groups["Female"].map((a) => renderAspirant(a, `${p.position}::Female`))}
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-3 space-y-2">{p.aspirants.map(renderAspirant)}</div>
+                    <div className="mt-3 space-y-2">
+                      {p.aspirants.map((a) => renderAspirant(a, p.position))}
+                    </div>
                   )}
                 </fieldset>
               );
