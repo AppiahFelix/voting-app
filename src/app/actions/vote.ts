@@ -74,7 +74,7 @@ export interface SubmitResult {
 
 export async function submitVotes(
   rawCode: string,
-  selections: Record<string, string> // position -> aspirant_id
+  selections: Record<string, string> // seat_key -> aspirant_id (seat_key is "position" or "position::Male"/"position::Female")
 ): Promise<SubmitResult> {
   const code = rawCode.trim().toUpperCase();
   if (!code) return { ok: false, error: "Missing access code." };
@@ -104,16 +104,16 @@ export async function submitVotes(
     return { ok: false, error: "Select at least one candidate before submitting." };
   }
 
-  const rows = entries.map(([position, aspirant_id]) => ({
+  const rows = entries.map(([seatKey, aspirant_id]) => ({
     voter_id: voter.id,
     aspirant_id,
-    position,
+    position: seatKey.split("::")[0],
+    seat_key: seatKey,
   }));
 
   const { error: votesError } = await supabase.from("votes").insert(rows);
   if (votesError) {
-    // TEMPORARY: surface the real error for debugging
-    return { ok: false, error: `DEBUG: ${votesError.message} (code: ${votesError.code})` };
+    return { ok: false, error: "Couldn't record your vote. Please try again." };
   }
 
   await supabase
