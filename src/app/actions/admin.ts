@@ -166,6 +166,45 @@ export async function deleteUnusedCode(id: string): Promise<{ ok: boolean; error
   return { ok: true };
 }
 
+// ---------- Reset for new election ----------
+
+export async function resetElection(): Promise<{ ok: boolean; error?: string }> {
+  const supabase = createAdminClient();
+
+  // Delete in an order that's safe even without relying on cascades.
+  const { error: votesError } = await supabase
+    .from("votes")
+    .delete()
+    .not("id", "is", null);
+  if (votesError) return { ok: false, error: `Couldn't clear votes: ${votesError.message}` };
+
+  const { error: votersError } = await supabase
+    .from("voters")
+    .delete()
+    .not("id", "is", null);
+  if (votersError) return { ok: false, error: `Couldn't clear voter codes: ${votersError.message}` };
+
+  const { error: aspirantsError } = await supabase
+    .from("aspirants")
+    .delete()
+    .not("id", "is", null);
+  if (aspirantsError) return { ok: false, error: `Couldn't clear aspirants: ${aspirantsError.message}` };
+
+  const { error: settingsError } = await supabase
+    .from("election_settings")
+    .update({ is_open: false })
+    .eq("id", 1);
+  if (settingsError) return { ok: false, error: `Couldn't reset voting status: ${settingsError.message}` };
+
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/aspirants");
+  revalidatePath("/admin/codes");
+  revalidatePath("/vote");
+  revalidatePath("/results");
+
+  return { ok: true };
+}
+
 // ---------- Election settings ----------
 
 export async function setElectionOpen(isOpen: boolean) {

@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setElectionOpen, updateElectionTitle } from "@/app/actions/admin";
+import { setElectionOpen, updateElectionTitle, resetElection } from "@/app/actions/admin";
 import ElectionTitleForm from "./title-form";
+import ResetElectionForm from "./reset-election-form";
 
 export const dynamic = "force-dynamic";
 
@@ -51,11 +52,13 @@ export default async function AdminDashboardPage() {
         </form>
       </div>
 
-      <div className="ballot-card p-6">
+      <div className="ballot-card p-6 mb-8">
         <h2 className="font-display text-xl mb-1">Election title</h2>
         <p className="text-muted text-sm mb-4">Shown on the home page and results page.</p>
         <ElectionTitleForm action={updateElectionTitle} currentTitle={settings?.title || ""} />
       </div>
+
+      <ResetElectionForm action={resetElection} />
     </div>
   );
 }
