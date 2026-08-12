@@ -35,10 +35,13 @@ export default function AddAspirantForm({ action }: { action: Action }) {
         <select
           id="sex"
           name="sex"
+          required
           className="w-full ballot-card px-3 py-2.5 focus:border-seal outline-none"
           defaultValue=""
         >
-          <option value="">Prefer not to specify</option>
+          <option value="" disabled>
+            Select sex
+          </option>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>

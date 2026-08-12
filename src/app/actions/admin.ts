@@ -65,8 +65,8 @@ export async function addAspirant(_prevState: { error?: string } | undefined, fo
   if (!name || !positionRaw) {
     return { error: "Name and position are required." };
   }
-  if (sex && sex !== "Male" && sex !== "Female") {
-    return { error: "Sex must be Male or Female." };
+  if (sex !== "Male" && sex !== "Female") {
+    return { error: "Select Male or Female." };
   }
 
   const position = normalizePosition(positionRaw);
@@ -98,7 +98,7 @@ export async function addAspirant(_prevState: { error?: string } | undefined, fo
     name,
     position,
     category: null,
-    sex: sex || null,
+    sex,
     photo_url,
   });
 
@@ -108,6 +108,56 @@ export async function addAspirant(_prevState: { error?: string } | undefined, fo
   revalidatePath("/vote");
   revalidatePath("/results");
   return { error: undefined, success: true };
+}
+
+export async function editAspirant(
+  id: string,
+  formData: FormData
+): Promise<{ ok: boolean; error?: string }> {
+  const name = String(formData.get("name") || "").trim();
+  const positionRaw = String(formData.get("position") || "").trim();
+  const sex = String(formData.get("sex") || "").trim();
+  const photo = formData.get("photo");
+
+  if (!name || !positionRaw) {
+    return { ok: false, error: "Name and position are required." };
+  }
+  if (sex !== "Male" && sex !== "Female") {
+    return { ok: false, error: "Select Male or Female." };
+  }
+
+  const position = normalizePosition(positionRaw);
+  const supabase = createAdminClient();
+
+  const update: Record<string, unknown> = { name, position, sex };
+
+  if (photo instanceof File && photo.size > 0) {
+    const looksLikeImage =
+      photo.type.startsWith("image/") ||
+      photo.type === "" ||
+      /\.(jpe?g|png|gif|webp|heic|heif|avif|bmp|tiff?|svg)$/i.test(photo.name);
+    if (!looksLikeImage) {
+      return { ok: false, error: "Photo must be an image file." };
+    }
+    if (photo.size > 8 * 1024 * 1024) {
+      return { ok: false, error: "Photo must be under 8MB." };
+    }
+    const path = `${crypto.randomUUID()}.${safeExtension(photo)}`;
+    const { error: uploadError } = await supabase.storage
+      .from("aspirant-photos")
+      .upload(path, photo, { contentType: photo.type || "application/octet-stream" });
+    if (uploadError) return { ok: false, error: `Photo upload failed: ${uploadError.message}` };
+    const { data: publicUrl } = supabase.storage.from("aspirant-photos").getPublicUrl(path);
+    update.photo_url = publicUrl.publicUrl;
+  }
+
+  const { error } = await supabase.from("aspirants").update(update).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/admin/aspirants");
+  revalidatePath("/vote");
+  revalidatePath("/results");
+  return { ok: true };
 }
 
 export async function deleteAspirant(id: string) {
