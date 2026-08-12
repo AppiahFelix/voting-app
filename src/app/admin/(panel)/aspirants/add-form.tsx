@@ -25,7 +25,7 @@ export default function AddAspirantForm({ action }: { action: Action }) {
   }
 
   return (
-    <form ref={formRef} action={formAction} className="grid sm:grid-cols-2 gap-4">
+    <form ref={formRef} action={formAction} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <Field label="Full name" name="name" required placeholder="e.g. Ama Owusu" />
       <Field label="Position" name="position" required placeholder="e.g. President" />
       <div>
