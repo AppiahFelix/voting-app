@@ -25,32 +25,20 @@ export default async function HomePage() {
         </h1>
         <p className="text-muted mb-10">
           {isOpen
-            ? "Voting is open. Cast your ballot with your access code, or watch results come in live."
-            : "Voting is currently closed. Results remain available to view."}
+            ? "Voting is open. Cast your ballot with your access code."
+            : "Voting is currently closed."}
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          {isOpen && (
+        {isOpen && (
+          <div className="flex justify-center">
             <Link
               href="/vote"
               className="seal-button font-display text-lg px-8 py-4 inline-flex items-center justify-center"
             >
               Cast your vote
             </Link>
-          )}
-          <Link
-            href="/results"
-            className="ballot-card px-8 py-4 font-medium inline-flex items-center justify-center hover:border-ink-soft transition-colors"
-          >
-            View live results
-          </Link>
-        </div>
-
-        <div className="mt-16 perforated pt-6">
-          <Link href="/admin/login" className="text-xs text-muted hover:text-ink underline underline-offset-4">
-            Election administrator
-          </Link>
-        </div>
+          </div>
+        )}
       </div>
     </main>
   );
