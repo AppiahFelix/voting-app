@@ -147,10 +147,23 @@ export async function generateVoterCodes(_prevState: { error?: string } | undefi
   return { error: undefined, success: true, generated: count };
 }
 
-export async function deleteUnusedCode(id: string) {
+export async function deleteUnusedCode(id: string): Promise<{ ok: boolean; error?: string }> {
   const supabase = createAdminClient();
-  await supabase.from("voters").delete().eq("id", id).eq("is_used", false);
+  const { error, count } = await supabase
+    .from("voters")
+    .delete({ count: "exact" })
+    .eq("id", id)
+    .eq("is_used", false);
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+  if (!count) {
+    return { ok: false, error: "Code not found, or it has already been used." };
+  }
+
   revalidatePath("/admin/codes");
+  return { ok: true };
 }
 
 // ---------- Election settings ----------
