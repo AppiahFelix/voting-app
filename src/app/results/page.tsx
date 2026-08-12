@@ -21,7 +21,7 @@ export default function ResultsPage() {
 
     async function load() {
       const [{ data: aspirants }, { data: votes }, { data: settings }] = await Promise.all([
-        supabase.from("aspirants").select("*").order("position").order("name"),
+        supabase.from("aspirants").select("*").order("position").order("created_at"),
         supabase.from("votes").select("aspirant_id"),
         supabase.from("election_settings").select("title").eq("id", 1).single(),
       ]);

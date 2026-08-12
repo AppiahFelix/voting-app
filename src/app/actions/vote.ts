@@ -42,7 +42,7 @@ export async function verifyVoterCode(rawCode: string): Promise<VerifyResult> {
     .from("aspirants")
     .select("*")
     .order("position", { ascending: true })
-    .order("name", { ascending: true });
+    .order("created_at", { ascending: true });
 
   if (aspirantsError || !aspirants) {
     return { ok: false, error: "Couldn't load the ballot. Try again shortly." };

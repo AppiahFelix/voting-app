@@ -12,7 +12,7 @@ export default async function AspirantsPage() {
     .from("aspirants")
     .select("*")
     .order("position")
-    .order("name");
+    .order("created_at");
 
   const list = (aspirants || []) as Aspirant[];
 
