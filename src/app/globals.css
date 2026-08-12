@@ -1,0 +1,103 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #16213e;
+  --ink-soft: #2b3a63;
+  --paper: #eef0f4;
+  --paper-card: #ffffff;
+  --seal: #b08d2b;
+  --seal-dark: #8c6f1e;
+  --counted: #2f6f4e;
+  --counted-soft: #e4f0e9;
+  --line: #d9dce3;
+  --muted: #5b6478;
+  --danger: #a33b3b;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-paper: var(--paper);
+  --color-paper-card: var(--paper-card);
+  --color-seal: var(--seal);
+  --color-seal-dark: var(--seal-dark);
+  --color-counted: var(--counted);
+  --color-counted-soft: var(--counted-soft);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-danger: var(--danger);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
+  --font-tally: var(--font-plex-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.font-tally {
+  font-family: var(--font-tally), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Wax-seal stamp motif used for primary/confirming actions */
+.seal-button {
+  border-radius: 9999px;
+  background: radial-gradient(circle at 30% 30%, var(--seal) 0%, var(--seal-dark) 100%);
+  color: #fff;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.12), inset 0 1px 1px rgba(255,255,255,0.35);
+}
+.seal-button:active {
+  box-shadow: 0 0 0 rgba(0,0,0,0.12), inset 0 1px 2px rgba(0,0,0,0.25);
+  transform: translateY(1px);
+}
+
+/* Ballot paper card */
+.ballot-card {
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+}
+
+/* Perforated divider evoking a torn ballot stub */
+.perforated {
+  border-top: 1px dashed var(--line);
+}
+
+.tally-digit {
+  display: inline-block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tally-updated {
+    animation: tally-pulse 0.5s ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tally-updated {
+    animation: none;
+  }
+}
+
+@keyframes tally-pulse {
+  0% { transform: translateY(-6px); opacity: 0.3; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+:focus-visible {
+  outline: 2px solid var(--seal);
+  outline-offset: 2px;
+}
