@@ -112,7 +112,8 @@ export async function submitVotes(
 
   const { error: votesError } = await supabase.from("votes").insert(rows);
   if (votesError) {
-    return { ok: false, error: "Couldn't record your vote. Please try again." };
+    // TEMPORARY: surface the real error for debugging
+    return { ok: false, error: `DEBUG: ${votesError.message} (code: ${votesError.code})` };
   }
 
   await supabase
