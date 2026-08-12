@@ -75,51 +75,77 @@ export default function VotePage() {
           <h1 className="font-display text-3xl mb-8">Make your selections</h1>
 
           <div className="space-y-8">
-            {positions.map((p) => (
-              <fieldset key={p.position} className="ballot-card p-5">
-                <legend className="font-display text-xl px-1">{p.position}</legend>
-                <div className="mt-3 space-y-2">
-                  {p.aspirants.map((a) => {
-                    const checked = selections[p.position] === a.id;
-                    return (
-                      <label
-                        key={a.id}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          checked ? "border-seal bg-counted-soft/40" : "border-line hover:border-ink-soft"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name={p.position}
-                          value={a.id}
-                          checked={checked}
-                          onChange={() =>
-                            setSelections((prev) => ({ ...prev, [p.position]: a.id }))
-                          }
-                          className="accent-[var(--seal)] w-4 h-4"
-                        />
-                        {a.photo_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={a.photo_url}
-                            alt=""
-                            className="w-10 h-10 rounded-full object-cover border border-line shrink-0"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-line shrink-0" aria-hidden />
-                        )}
-                        <span className="flex-1">
-                          <span className="font-medium">{a.name}</span>
-                          <span className="block text-xs text-muted">
-                            {[a.category, a.sex].filter(Boolean).join(" · ") || undefined}
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
-            ))}
+            {positions.map((p) => {
+              const groups: Record<string, Aspirant[]> = {};
+              for (const a of p.aspirants) {
+                const key = a.sex === "Male" || a.sex === "Female" ? a.sex : "Other";
+                groups[key] = groups[key] || [];
+                groups[key].push(a);
+              }
+              const isSplit =
+                (groups["Male"]?.length ?? 0) > 0 &&
+                (groups["Female"]?.length ?? 0) > 0 &&
+                !groups["Other"];
+
+              const renderAspirant = (a: Aspirant) => {
+                const checked = selections[p.position] === a.id;
+                return (
+                  <label
+                    key={a.id}
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      checked ? "border-seal bg-counted-soft/40" : "border-line hover:border-ink-soft"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name={p.position}
+                      value={a.id}
+                      checked={checked}
+                      onChange={() =>
+                        setSelections((prev) => ({ ...prev, [p.position]: a.id }))
+                      }
+                      className="accent-[var(--seal)] w-4 h-4"
+                    />
+                    {a.photo_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={a.photo_url}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover border border-line shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-line shrink-0" aria-hidden />
+                    )}
+                    <span className="flex-1">
+                      <span className="font-medium">{a.name}</span>
+                      <span className="block text-xs text-muted">
+                        {[a.category, a.sex].filter(Boolean).join(" · ") || undefined}
+                      </span>
+                    </span>
+                  </label>
+                );
+              };
+
+              return (
+                <fieldset key={p.position} className="ballot-card p-5">
+                  <legend className="font-display text-xl px-1">{p.position}</legend>
+                  {isSplit ? (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted mb-2">Male</p>
+                        <div className="space-y-2">{groups["Male"].map(renderAspirant)}</div>
+                      </div>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted mb-2">Female</p>
+                        <div className="space-y-2">{groups["Female"].map(renderAspirant)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-2">{p.aspirants.map(renderAspirant)}</div>
+                  )}
+                </fieldset>
+              );
+            })}
           </div>
 
           {error && (
