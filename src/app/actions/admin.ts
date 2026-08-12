@@ -47,19 +47,29 @@ function safeExtension(file: File): string {
   return "jpg";
 }
 
+// Normalizes free-typed position values so "president", "PRESIDENT", and
+// "President" are all treated as the same position.
+function normalizePosition(raw: string): string {
+  return raw
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export async function addAspirant(_prevState: { error?: string } | undefined, formData: FormData) {
   const name = String(formData.get("name") || "").trim();
-  const position = String(formData.get("position") || "").trim();
-  const category = String(formData.get("category") || "").trim();
+  const positionRaw = String(formData.get("position") || "").trim();
   const sex = String(formData.get("sex") || "").trim();
   const photo = formData.get("photo");
 
-  if (!name || !position) {
+  if (!name || !positionRaw) {
     return { error: "Name and position are required." };
   }
   if (sex && sex !== "Male" && sex !== "Female") {
     return { error: "Sex must be Male or Female." };
   }
+
+  const position = normalizePosition(positionRaw);
 
   const supabase = createAdminClient();
 
@@ -87,7 +97,7 @@ export async function addAspirant(_prevState: { error?: string } | undefined, fo
   const { error } = await supabase.from("aspirants").insert({
     name,
     position,
-    category: category || null,
+    category: null,
     sex: sex || null,
     photo_url,
   });
