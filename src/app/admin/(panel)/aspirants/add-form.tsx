@@ -28,7 +28,6 @@ export default function AddAspirantForm({ action }: { action: Action }) {
     <form ref={formRef} action={formAction} className="grid sm:grid-cols-2 gap-4">
       <Field label="Full name" name="name" required placeholder="e.g. Ama Owusu" />
       <Field label="Position" name="position" required placeholder="e.g. President" />
-      <Field label="Category" name="category" placeholder="e.g. Faculty of Science (optional)" />
       <div>
         <label className="block text-sm font-medium mb-1" htmlFor="sex">
           Sex
